@@ -5,7 +5,7 @@ except ImportError:
 
 config = {
         'description': 'My Project',
-        'author': 'Beva-Lwash',
+        'author': 'My Name',
         'url': 'URL to get it at',
         'download url': 'Where to download it',
         'author email': 'My email',
