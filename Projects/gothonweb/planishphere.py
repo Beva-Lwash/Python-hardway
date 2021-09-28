@@ -98,6 +98,17 @@ wall and pass out. You wake up shortly after only to
 die as the Gothon stomps on your head and eats you.
                    """ )
 
+tell_a_joke = Room('tell_a_joke', ("""
+Lucky for you they made you learn Gothon insults in
+the academy. You tell the one Gothon joke you know:
+Lbhe zbgure vf fb sng, jura fur fvgf nebhaq gur ubhfr
+fur fvgf nebhaq gur ubhfr. The Gothon stops, tries
+not to laugh, then busts out laughing and can't move.
+While he's laughing you run up and shoot him square i
+the head putting him down, then jump through the
+Weapon Armory door.
+            """)
+
 def load_room(name):
     """
     There is a potential security problem here.
