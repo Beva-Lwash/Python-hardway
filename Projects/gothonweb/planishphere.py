@@ -109,6 +109,8 @@ central_corridor.add_paths({
 
 START = 'central_corridor'
 
+rooms ={central_corridor, laser_weapon_armory}
+
 
 def load_room(name):
     """
@@ -127,7 +129,7 @@ def name_room(room):
             return key
 
 class Scene(object):
-    def enter(self):
+    def enter(self, room):
         print("This scene is not yet configured.")
         print("Subclass it and implement enter().")
         exit(1)
@@ -160,7 +162,7 @@ class Death(Scene):
         exit(1)
 
 class CentralCorridor(Scene):
-    def enter(self):
+    def enter(self, central_corridor):
         print(dedent(central_corridor.description))
         action = input("> ")
         if action in central_corridor.paths:
