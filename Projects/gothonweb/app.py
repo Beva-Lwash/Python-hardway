@@ -11,9 +11,9 @@ def index():
     session['room_name'] = planisphere.START
     return redirect(url_for("game"))
 
-@app.rouute("/game", methods=['GET', 'POST'])
+@app.route("/game", methods=['GET', 'POST'])
 def game():
-    room_name = seesion.get('room_name')
+    room_name = session.get('room_name')
 
     if request.method == 'GET':
         if room_name:
@@ -38,6 +38,5 @@ def game():
 
 app.secret_key = "INF5190"
 
-
-if __name__ == "__main__":
+if __name__=="__main__":
     app.run()
