@@ -72,6 +72,16 @@ wall and pass out. You wake up shortly after only to
 die as the Gothon stomps on your head and eats you.
                    """ )
 
+throw_a_bomb = Room('throw a bomb', """
+In a panic you throw the bomb at the group of Gothon
+and make a leap for the door. Right as you drop it a
+Gothon shoots you right in the back killing you. As
+you die you see another Gothon frantically try to
+disarm the bomb. You die knowing they will probably
+blow up when it goes off.
+         """)
+
+
 tell_a_joke = Room('tell_a_joke', """
 Lucky for you they made you learn Gothon insults in
 the academy. You tell the one Gothon joke you know:
@@ -93,7 +103,7 @@ escape_pod.add_paths({
 
 the_bridge.add_paths({
     'throw the bomb': shoot_death,
-    'slowly place the bomb': escape_pod
+    'slowly place the bomb': 'escape_pod'
 })
 
 laser_weapon_armory.add_paths({
@@ -107,29 +117,32 @@ central_corridor.add_paths({
     'tell a joke': laser_weapon_armory
 })
 
+shoot_death.add_paths({
+    'died': 'death'})
+
+dodge_death.add_paths({
+    'died': 'death'})
+
+throw_a_bomb.add_paths({
+    'died': 'death'})
+
 START = 'central_corridor'
 
-rooms ={central_corridor, laser_weapon_armory}
-
+roomsy = {central_corridor, laser_weapon_armory}
+death_rooms_central_corridor = {shoot_death, dodge_death}
+rooms = {central_corridor, laser_weapon_armory, shoot_death, dodge_death}
 
 def load_room(name):
-    """
-    There is a potential security problem here.
-    Who gets to set name? Can that expose a variable?
-    """
-    return globals().get(name)
+    for room in rooms:
+        if room.name == name:
+            return room
 
 def name_room(room):
-    """
-    Same possible security problem. Can you trust room?
-    What's a better solution thatn this globals lookup?
-    """
-    for key, value in globals().items():
-        if value == room:
-            return key
+        if isinstance(room, Room):
+            return room.name
 
 class Scene(object):
-    def enter(self, room):
+    def enter(self):
         print("This scene is not yet configured.")
         print("Subclass it and implement enter().")
         exit(1)
@@ -162,18 +175,24 @@ class Death(Scene):
         exit(1)
 
 class CentralCorridor(Scene):
-    def enter(self, central_corridor):
+    def enter(self):
         print(dedent(central_corridor.description))
         action = input("> ")
+
         if action in central_corridor.paths:
-           return  central_corridor.go(action)
+            if central_corridor.go(action) in death_rooms_central_corridor:
+                print(dedent(central_corridor.go(action).description))
+                return central_corridor.go(action).go('died')
+            else:
+                return 'laser_weapon_armory'
         else:
-           return  central_corridor.name
+            print("Mauvais chemin!!!")
+            return  'central_corridor'
 
 class LaserWeaponArmory(Scene):
     def enter(self):
         print(dedent(laser_weapon_armory.description))
-        code = f"{randint(1,9)}{randint(1,9)}{randint(1,9)}"
+        code = '0132'
         guess = input("[keypad]> ")
         guesses = 0
 
@@ -183,22 +202,11 @@ class LaserWeaponArmory(Scene):
             guess = input("[keypad]> ")
 
         if guess == code:
-            print(dedent("""
-The container clicks open and the seal breaks, letti
-gas out. You grab the neutron bomb and run as fast a
-you can to the bridge where you must place it in the
-right spot.
-            """))
             return 'the_bridge'
 
         else:
-            print(dedent("""
-The lock buzzes one last time and then you hear a
-sickening melting sound as the mechanism is fused
-together. You decide to sit there, and finally the
-Gothons blow up the ship from their ship and you die
-            """))
-            return 'death'
+            print(dedent(shoot_death.description))
+            return shoot_death.go('died')
 
 class TheBridge(Scene):
     def enter(self):
@@ -206,27 +214,9 @@ class TheBridge(Scene):
         action = input("> ")
 
         if action == "throw the bomb":
-            print(dedent("""
-In a panic you throw the bomb at the group of Gothon
-and make a leap for the door. Right as you drop it a
-Gothon shoots you right in the back killing you. As
-you die you see another Gothon frantically try to
-disarm the bomb. You die knowing they will probably
-blow up when it goes off.
-            """))
-            return 'death'
+            return throw_a_bomb.go('died')
         elif action == "slowly place the bomb":
-            print(dedent("""
-You point your blaster at the bomb under your arm an
-the Gothons put their hands up and start to sweat.
-You inch backward to the door, open it, and then
-carefully place the bomb on the floor, pointing your
-blaster at it. You then jump back through the door,
-punch the close button and blast the lock so the
-Gothons can't get out. Now that the bomb is placed
-you run to the escape pod to get off this tin can.
-            """))
-            return 'escape_pod'
+            return the_bridge.go(action)
         else:
             print("DOES NOT COMPUTE!")
             return "the_bridge"
@@ -234,27 +224,14 @@ you run to the escape pod to get off this tin can.
 class EscapePod(Scene):
     def enter(self):
         print(dedent(escape_pod.description))
-        good_pod = randint(1,5)
+        good_pod = 2
         guess = input("[pod #]> ")
 
         if int(guess) != good_pod:
-            print(dedent("""
-You jump into pod {guess} and hit the eject button.
-The pod escapes out into the void of space, then
-implodes as the hull ruptures, crushing your body in
-jam jelly.
-            """))
+            print(the_end_loser.description)
             return 'death'
         else:
-            print(dedent("""
-You jump into pod {guess} and hit the eject button.
-
-The pod easily slides out into space heading to the
-planet below. As it flies to the planet, you look
-back and see your ship implode then explode like a
-bright star, taking out the Gothon ship at the same
-time. You won!
-            """))
+            print(escape_pod.go('*').description)
             return 'finished'
 
 class Finished(Scene):
@@ -274,6 +251,7 @@ class Map(object):
 
     def __init__(self, start_scene):
         self.start_scene = start_scene
+
 
     def next_scene(self, scene_name):
         val = Map.scenes.get(scene_name)
