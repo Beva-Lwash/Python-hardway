@@ -2,6 +2,7 @@ from flask import Flask, session, redirect, url_for, escape, request
 from flask import render_template
 from gothonweb import planisphere
 
+
 app = Flask(__name__)
 
 @app.route("/")
